@@ -2324,6 +2324,9 @@ export default {
       personalResultsError: null,
       isLoadingTeamInfo: false,
       teamInfoError: null,
+      isLoadingPendingStudents: false,
+      pendingStudentsError: null,
+      activeTeamTab: 'team-members', // 新增：用于控制标签页切换，默认显示团队成员
     };
   },
   computed: {
@@ -2440,13 +2443,18 @@ export default {
         this.isLoadingTeamInfo = true;
         this.teamInfoError = null;
         
-        const response = await apiService.getTeamInfo();
-        
-        if (response && response.data && response.data.data) {
-          this.teamInfo = response.data.data;
-        } else {
-          throw new Error('获取团队信息失败');
-        }
+        // 同时加载团队信息和待审批学生列表
+        await Promise.all([
+          (async () => {
+            const response = await apiService.getTeamInfo();
+            if (response && response.data && response.data.data) {
+              this.teamInfo = response.data.data;
+            } else {
+              throw new Error('获取团队信息失败');
+            }
+          })(),
+          this.loadPendingStudents()
+        ]);
       } catch (error) {
         console.error('Failed to load team info:', error);
         this.teamInfoError = '加载团队信息失败，请稍后重试';
@@ -2457,34 +2465,22 @@ export default {
     
     // 加载待审批学生列表
     async loadPendingStudents() {
-      this.isLoadingApprovals = true;
-      this.approvalsError = '';
-      
       try {
-        // 调用获取待审批学生列表的API
+        this.isLoadingPendingStudents = true;
+        this.pendingStudentsError = null;
+        
         const response = await apiService.getPendingStudents();
         
-        if (response.data.success) {
-          // 确保接收到的数据与预期格式匹配
-          this.pendingStudents = response.data.data || [];
-          
-          // 格式化性别显示，确保性别显示为"男"或"女"
-          this.pendingStudents = this.pendingStudents.map(student => ({
-            ...student,
-            // 如果性别是英文，转换为中文
-            sex: student.sex === 'man' ? '男' : (student.sex === 'woman' ? '女' : student.sex)
-          }));
-          
-          console.log('成功加载待审批学生:', this.pendingStudents);
+        if (response && response.data && response.data.data) {
+          this.pendingStudents = response.data.data;
         } else {
-          this.approvalsError = response.data.message || '加载待审批成员失败';
-          console.error('加载待审批成员失败:', response.data.message);
+          throw new Error('获取待审批学生列表失败');
         }
       } catch (error) {
-        console.error('获取待审批学生错误:', error);
-        this.approvalsError = '加载待审批学生时发生错误，请稍后再试';
+        console.error('Failed to load pending students:', error);
+        this.pendingStudentsError = '加载待审批学生列表失败，请稍后重试';
       } finally {
-        this.isLoadingApprovals = false;
+        this.isLoadingPendingStudents = false;
       }
     },
     

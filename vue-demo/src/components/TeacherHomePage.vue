@@ -7,7 +7,7 @@
           <img 
             src="../assets/logo.png" 
             alt="研究团队" 
-            onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMwMDc2ZmYiIHJ4PSI2Ii8+PGcgZmlsbD0id2hpdGUiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMTIiIHI9IjUiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjI1IiByPSI0Ii8+PGNpcmNsZSBjeD0iMjgiIGN5PSIyNSIgcj0iNCIvPjxsaW5lIHgxPSIyMCIgeTE9IjE3IiB4Mj0iMTQiIHkyPSIyMiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjIwIiB5MT0iMTciIHgyPSIyNiIgeTI9IjIyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz48L2c+PC9zdmc+'"
+            onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMwMDc2ZmYiIHJ4PSI2Ii8+PGcgZmlsbD0id2hpdGUiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMTIiIHI9IjUiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjI1IiByPSI0Ii8+PGNpcmNsZSBjeD0iMjgiIGN5PSIyNSIgcj0iNCIvPjxsaW5lIHgxPSIyMCIgeTE9IjE3IiB4Mj0iMTQiIHkyPSIyMiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjIwIiB5MT0iMTciIHgyPSIyNiIgeTI9IjIyIiBzdHJva2U9IndoaXRlIiBzdHJva2tlLXdpZHRoPSIyIi8+PC9nPjwvc3ZnPg=='"
           >
         </div>
         <div class="team-name">研究团队</div>
@@ -1281,7 +1281,7 @@
                           </thead>
                           <tbody>
                             <tr v-for="member in currentDirectionDetail.members" :key="member.id">
-                              <td>{{ member.studentName }}</td>
+                              <td>{{ member.name }}</td>
                               <td>
                                 <div class="contact-info">
                                   <div v-if="member.email">邮箱: {{ member.email }}</div>
@@ -2536,6 +2536,9 @@ export default {
         await this.loadPersonalResultsData();
       } else if (menu === 'team-info') {
         await this.loadTeamInfo();
+      } else if (menu === 'direction-my') {
+        this.loadPendingApplications();
+        // 其他"我的方向"初始化逻辑...
       }
     },
     
@@ -4800,104 +4803,104 @@ export default {
     },
     updatePersonalResultsChart() {
       // 检查canvas元素是否存在
-      const canvas = this.$refs.personalResultsChart;
-      if (!canvas) {
+        const canvas = this.$refs.personalResultsChart;
+        if (!canvas) {
         console.error('Canvas element not found');
-        return;
-      }
+          return;
+        }
 
       // 销毁旧的图表实例
-      if (this.personalResultsChart) {
-        this.personalResultsChart.destroy();
-      }
+        if (this.personalResultsChart) {
+          this.personalResultsChart.destroy();
+        }
 
-      // 获取当前类型的数据
-      const currentTypeData = this.personalResultsData[this.personalTypeTab];
-      if (!currentTypeData) {
+        // 获取当前类型的数据
+        const currentTypeData = this.personalResultsData[this.personalTypeTab];
+        if (!currentTypeData) {
         console.error('No data found for type:', this.personalTypeTab);
-        return;
-      }
+          return;
+        }
 
-      // 准备数据
-      const labels = ['A类', 'B类', 'C类', 'D类'];
-      const completedData = [];
-      const notCompletedData = [];
+        // 准备数据
+        const labels = ['A类', 'B类', 'C类', 'D类'];
+        const completedData = [];
+        const notCompletedData = [];
 
-      // 处理数据
-      labels.forEach(level => {
-        const levelKey = level.replace('类', '');
-        const levelData = currentTypeData[levelKey] || { completed: 0, not_completed: 0 };
-        completedData.push(levelData.completed);
-        notCompletedData.push(levelData.not_completed);
-      });
+        // 处理数据
+        labels.forEach(level => {
+          const levelKey = level.replace('类', '');
+          const levelData = currentTypeData[levelKey] || { completed: 0, not_completed: 0 };
+          completedData.push(levelData.completed);
+          notCompletedData.push(levelData.not_completed);
+        });
 
-      // 创建新的图表
-      const ctx = canvas.getContext('2d');
-      this.personalResultsChart = new Chart(ctx, {
+        // 创建新的图表
+        const ctx = canvas.getContext('2d');
+        this.personalResultsChart = new Chart(ctx, {
         type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: '已完成',
-              data: completedData,
-              borderColor: '#52c41a',
-              backgroundColor: 'rgba(82, 196, 26, 0.1)',
-              tension: 0.4,
-              fill: true
-            },
-            {
-              label: '未完成',
-              data: notCompletedData,
-              borderColor: '#f5222d',
-              backgroundColor: 'rgba(245, 34, 45, 0.1)',
-              tension: 0.4,
-              fill: true
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                usePointStyle: true,
-                padding: 20
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: '已完成',
+                data: completedData,
+                borderColor: '#52c41a',
+                backgroundColor: 'rgba(82, 196, 26, 0.1)',
+                tension: 0.4,
+                fill: true
+              },
+              {
+                label: '未完成',
+                data: notCompletedData,
+                borderColor: '#f5222d',
+                backgroundColor: 'rgba(245, 34, 45, 0.1)',
+                tension: 0.4,
+                fill: true
               }
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: {
-                title: (tooltipItems) => {
-                  return tooltipItems[0].label;
-                },
-                label: (context) => {
-                  const label = context.dataset.label;
-                  const value = context.parsed.y;
-                  return `${label}: ${value}`;
-                },
-                footer: (tooltipItems) => {
-                  const level = tooltipItems[0].label.replace('类', '');
-                  const typeData = this.personalResultsData[this.personalTypeTab];
-                  if (typeData && typeData[level]) {
-                    const levelData = typeData[level];
-                    const total = levelData.completed + levelData.not_completed;
-                    return `总任务数: ${total}`;
-                  }
-                  return '';
-                }
-              }
-            }
+            ]
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
-              }
+          options: {
+             responsive: true,
+             maintainAspectRatio: false,
+             plugins: {
+               legend: {
+                 position: 'top',
+                 labels: {
+                   usePointStyle: true,
+                   padding: 20
+                 }
+               },
+               tooltip: {
+                 mode: 'index',
+                 intersect: false,
+                 callbacks: {
+                   title: (tooltipItems) => {
+                     return tooltipItems[0].label;
+                   },
+                   label: (context) => {
+                     const label = context.dataset.label;
+                     const value = context.parsed.y;
+                     return `${label}: ${value}`;
+                   },
+                   footer: (tooltipItems) => {
+                     const level = tooltipItems[0].label.replace('类', '');
+                     const typeData = this.personalResultsData[this.personalTypeTab];
+                     if (typeData && typeData[level]) {
+                       const levelData = typeData[level];
+                       const total = levelData.completed + levelData.not_completed;
+                       return `总任务数: ${total}`;
+                     }
+                     return '';
+                   }
+                 }
+               }
+             },
+             scales: {
+               y: {
+                 beginAtZero: true,
+                 ticks: {
+                   stepSize: 1
+                 }
             }
           }
         }
@@ -8009,6 +8012,34 @@ textarea.form-control {
   color: #ff4d4f;
   text-align: center;
   padding: 20px;
+}
+
+.tab-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 40px;
+  line-height: 40px;
+  cursor: pointer;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  font-size: 12px;
+  color: #fff;
+  background: #ff4d4f;
+  border-radius: 9px;
+  margin-left: 6px;
+  position: static;
+  vertical-align: middle;
+  box-sizing: border-box;
+  z-index: 1;
 }
 </style>
 

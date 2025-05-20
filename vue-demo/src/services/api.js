@@ -298,6 +298,22 @@ const apiService = {
   },
   getPersonalTaskStats({ ownerId, ownerType }) {
     return apiClient.get(`/tasks/personal-stats?ownerId=${ownerId}&ownerType=${ownerType}`);
+  },
+  // 学生申请加入方向
+  applyToOrientation({ orientationId, studentId, studentName, teacherId }) {
+    return apiClient.post('/orientations/apply', {
+      orientationId,
+      studentId,
+      studentName,
+      teacherId
+    });
+  },
+  // 获取带申请状态的所有方向列表
+  getOrientationsWithStatus(studentId) {
+    return apiClient.post('/orientations/with-status', { studentId });
+  },
+  getStudentOrientations(studentId) {
+    return apiClient.get(`/orientations/student/${studentId}`);
   }
 };
 
